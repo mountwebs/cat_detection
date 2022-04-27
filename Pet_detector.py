@@ -112,6 +112,8 @@ cat_detected = False
 
 cat_frame_counter = 0
 
+detection_threshold = 5
+
 pause = 0
 pause_counter = 0
 
@@ -165,17 +167,17 @@ def pet_detector(frame):
         if ((x > TL_inside[0]) and (x < BR_inside[0]) and (y > TL_inside[1]) and (y < BR_inside[1])):
             cat_frame_counter = cat_frame_counter + 1
 
-    # If pet has been detected inside for more than 10 frames, set detected_inside flag
+    # If pet has been detected inside for more than 10 frames, set cat_detected flag
     # and send a text to the phone.
-    if cat_frame_counter > 10:
-        detected_inside = True
+    if cat_frame_counter > detection_threshold:
+        cat_detected = True
         cat_frame_counter = 0
         # Pause pet detection by setting "pause" flag
         pause = 1
 
     # If pause flag is set, draw message on screen.
     if pause == 1:
-        if detected_inside == True:
+        if cat_detected == True:
             cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
                         int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
             cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
@@ -187,7 +189,7 @@ def pet_detector(frame):
         if pause_counter > 30:
             pause = 0
             pause_counter = 0
-            detected_inside = False
+            cat_detected = False
             detected_outside = False
 
     # Draw counter info
