@@ -28,6 +28,11 @@ import tensorflow as tf
 import argparse
 import sys
 
+import RPi.GPIO as GPIO
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)
+
 
 # Set up camera constants
 IM_WIDTH = 640    # Use smaller resolution for
@@ -178,6 +183,7 @@ def pet_detector(frame):
     # If pause flag is set, draw message on screen.
     if pause == 1:
         if cat_detected == True:
+            GPIO.output(18, GPIO.HIGH)
             cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
                         int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
             cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
@@ -191,6 +197,7 @@ def pet_detector(frame):
             pause_counter = 0
             cat_detected = False
             detected_outside = False
+            GPIO.output(18, GPIO.LOW)
 
     # Draw counter info
     cv2.putText(frame, 'Detection counter: ' + str(cat_frame_counter),
