@@ -163,14 +163,13 @@ def pet_detector(frame):
 
         # If object is in inside box, increment inside counter variable
         if ((x > TL_inside[0]) and (x < BR_inside[0]) and (y > TL_inside[1]) and (y < BR_inside[1])):
-            inside_counter = inside_counter + 1
+            cat_frame_counter = cat_frame_counter + 1
 
     # If pet has been detected inside for more than 10 frames, set detected_inside flag
     # and send a text to the phone.
-    if inside_counter > 10:
+    if cat_frame_counter > 10:
         detected_inside = True
-        inside_counter = 0
-        outside_counter = 0
+        cat_frame_counter = 0
         # Pause pet detection by setting "pause" flag
         pause = 1
 
@@ -192,8 +191,8 @@ def pet_detector(frame):
             detected_outside = False
 
     # Draw counter info
-    cv2.putText(frame, 'Detection counter: ' + str(max(inside_counter,
-                outside_counter)), (10, 100), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
+    cv2.putText(frame, 'Detection counter: ' + str(cat_frame_counter),
+                (10, 100), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
     cv2.putText(frame, 'Pause counter: ' + str(pause_counter),
                 (10, 150), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
 
