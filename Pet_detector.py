@@ -14,9 +14,7 @@
 # The framework is based off the Object_detection_picamera.py script located here:
 # https://github.com/EdjeElectronics/TensorFlow-Object-Detection-on-the-Raspberry-Pi/blob/master/Object_detection_picamera.py
 #
-# Sending a text requires setting up a Twilio account (free trials are available).
-# Here is a good tutorial for using Twilio:
-# https://www.twilio.com/docs/sms/quickstart/python
+
 
 
 # Import packages
@@ -29,17 +27,6 @@ import tensorflow as tf
 import argparse
 import sys
 
-# Set up Twilio
-from twilio.rest import Client
-
-# Twilio SID, authentication token, my phone number, and the Twilio phone number
-# are stored as environment variables on my Pi so people can't see them
-account_sid = os.environ['TWILIO_ACCOUNT_SID']
-auth_token = os.environ['TWILIO_AUTH_TOKEN']
-my_number = os.environ['MY_DIGITS']
-twilio_number = os.environ['TWILIO_DIGITS']
-
-client = Client(account_sid,auth_token)
 
 # Set up camera constants
 IM_WIDTH = 1280
@@ -201,11 +188,6 @@ def pet_detector(frame):
     # and send a text to the phone.
     if inside_counter > 10:
         detected_inside = True
-        message = client.messages.create(
-            body = 'Your pet wants outside!',
-            from_=twilio_number,
-            to=my_number
-            )
         inside_counter = 0
         outside_counter = 0
         # Pause pet detection by setting "pause" flag
@@ -215,11 +197,6 @@ def pet_detector(frame):
     # and send a text to the phone.
     if outside_counter > 10:
         detected_outside = True
-        message = client.messages.create(
-            body = 'Your pet wants inside!',
-            from_=twilio_number,
-            to=my_number
-            )
         inside_counter = 0
         outside_counter = 0
         # Pause pet detection by setting "pause" flag
