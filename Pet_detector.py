@@ -115,6 +115,8 @@ BR_inside = (int(IM_WIDTH), int(IM_HEIGHT))
 # Initialize control variables used for pet detector
 cat_detected = False
 
+pause_length = 10
+
 cat_frame_counter = 0
 
 detection_threshold = 5
@@ -192,7 +194,7 @@ def pet_detector(frame):
         # Increment pause counter until it reaches 30 (for a framerate of 1.5 FPS, this is about 20 seconds),
         # then unpause the application (set pause flag to 0).
         pause_counter = pause_counter + 1
-        if pause_counter > 30:
+        if pause_counter > pause_length:
             pause = 0
             pause_counter = 0
             cat_detected = False
