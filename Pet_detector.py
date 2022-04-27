@@ -119,7 +119,7 @@ pause_length = 10
 
 cat_frame_counter = 0
 
-detection_threshold = 5
+detection_threshold = 2
 
 pause = 0
 pause_counter = 0
