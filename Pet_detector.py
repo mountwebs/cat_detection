@@ -33,15 +33,6 @@ import sys
 IM_WIDTH = 640    # Use smaller resolution for
 IM_HEIGHT = 480   # slightly faster framerate
 
-# Select camera type (if user enters --usbcam when calling this script,
-# a USB webcam will be used)
-camera_type = 'picamera'
-parser = argparse.ArgumentParser()
-parser.add_argument('--usbcam', help='Use a USB webcam instead of picamera',
-                    action='store_true')
-args = parser.parse_args()
-if args.usbcam:
-    camera_type = 'usb'
 
 #### Initialize TensorFlow model ####
 
@@ -214,84 +205,44 @@ def pet_detector(frame):
 # Picamera or USB webcam.
 
 
-### Picamera ###
-if camera_type == 'picamera':
-    # Initialize Picamera and grab reference to the raw capture
-    camera = PiCamera()
-    camera.resolution = (IM_WIDTH, IM_HEIGHT)
-    camera.framerate = 10
-    rawCapture = PiRGBArray(camera, size=(IM_WIDTH, IM_HEIGHT))
+# Initialize Picamera and grab reference to the raw capture
+camera = PiCamera()
+camera.resolution = (IM_WIDTH, IM_HEIGHT)
+camera.framerate = 10
+rawCapture = PiRGBArray(camera, size=(IM_WIDTH, IM_HEIGHT))
+rawCapture.truncate(0)
+
+# Continuously capture frames and perform object detection on them
+for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+
+    t1 = cv2.getTickCount()
+
+    # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
+    # i.e. a single-column array, where each item in the column has the pixel RGB value
+    frame = np.copy(frame1.array)
+    frame.setflags(write=1)
+
+    # Pass frame into pet detection function
+    frame = pet_detector(frame)
+
+    # Draw FPS
+    cv2.putText(frame, "FPS: {0:.2f}".format(
+        frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
+
+    # All the results have been drawn on the frame, so it's time to display it.
+    cv2.imshow('Object detector', frame)
+
+    # FPS calculation
+    t2 = cv2.getTickCount()
+    time1 = (t2-t1)/freq
+    frame_rate_calc = 1/time1
+
+    # Press 'q' to quit
+    if cv2.waitKey(1) == ord('q'):
+        break
+
     rawCapture.truncate(0)
 
-    # Continuously capture frames and perform object detection on them
-    for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-
-        t1 = cv2.getTickCount()
-
-        # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
-        # i.e. a single-column array, where each item in the column has the pixel RGB value
-        frame = np.copy(frame1.array)
-        frame.setflags(write=1)
-
-        # Pass frame into pet detection function
-        frame = pet_detector(frame)
-
-        # Draw FPS
-        cv2.putText(frame, "FPS: {0:.2f}".format(
-            frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
-
-        # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
-
-        # FPS calculation
-        t2 = cv2.getTickCount()
-        time1 = (t2-t1)/freq
-        frame_rate_calc = 1/time1
-
-        # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-        rawCapture.truncate(0)
-
-    camera.close()
-
-### USB webcam ###
-
-elif camera_type == 'usb':
-    # Initialize USB webcam feed
-    camera = cv2.VideoCapture(0)
-    ret = camera.set(3, IM_WIDTH)
-    ret = camera.set(4, IM_HEIGHT)
-
-    # Continuously capture frames and perform object detection on them
-    while(True):
-
-        t1 = cv2.getTickCount()
-
-        # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
-        # i.e. a single-column array, where each item in the column has the pixel RGB value
-        ret, frame = camera.read()
-
-        # Pass frame into pet detection function
-        frame = pet_detector(frame)
-
-        # Draw FPS
-        cv2.putText(frame, "FPS: {0:.2f}".format(
-            frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
-
-        # All the results have been drawn on the frame, so it's time to display it.
-        cv2.imshow('Object detector', frame)
-
-        # FPS calculation
-        t2 = cv2.getTickCount()
-        time1 = (t2-t1)/freq
-        frame_rate_calc = 1/time1
-
-        # Press 'q' to quit
-        if cv2.waitKey(1) == ord('q'):
-            break
-
-    camera.release()
+camera.close()
 
 cv2.destroyAllWindows()
