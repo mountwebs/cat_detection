@@ -113,19 +113,13 @@ freq = cv2.getTickFrequency()
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # Define inside box coordinates (top left and bottom right)
-TL_inside = (int(IM_WIDTH*0.1), int(IM_HEIGHT*0.35))
-BR_inside = (int(IM_WIDTH*0.45), int(IM_HEIGHT-5))
-
-# Define outside box coordinates (top left and bottom right)
-TL_outside = (int(IM_WIDTH*0.46), int(IM_HEIGHT*0.25))
-BR_outside = (int(IM_WIDTH*0.8), int(IM_HEIGHT*.85))
+TL_inside = (0, 0)
+BR_inside = (int(IM_WIDTH), int(IM_HEIGHT))
 
 # Initialize control variables used for pet detector
-detected_inside = False
-detected_outside = False
+cat_detected = False
 
-inside_counter = 0
-outside_counter = 0
+cat_frame_counter = 0
 
 pause = 0
 pause_counter = 0
@@ -139,8 +133,7 @@ pause_counter = 0
 def pet_detector(frame):
 
     # Use globals for the control variables so they retain their value after function exits
-    global detected_inside, detected_outside
-    global inside_counter, outside_counter
+    global cat_detected, cat_frame_counter
     global pause, pause_counter
 
     frame_expanded = np.expand_dims(frame, axis=0)
@@ -161,10 +154,7 @@ def pet_detector(frame):
         line_thickness=8,
         min_score_thresh=0.40)
 
-    # Draw boxes defining "outside" and "inside" locations.
-    cv2.rectangle(frame, TL_outside, BR_outside, (255, 20, 20), 3)
-    cv2.putText(frame, "Outside box",
-                (TL_outside[0]+10, TL_outside[1]-10), font, 1, (255, 20, 255), 3, cv2.LINE_AA)
+    # Draw boxe
     cv2.rectangle(frame, TL_inside, BR_inside, (20, 20, 255), 3)
     cv2.putText(frame, "Inside box",
                 (TL_inside[0]+10, TL_inside[1]-10), font, 1, (20, 255, 255), 3, cv2.LINE_AA)
@@ -184,10 +174,6 @@ def pet_detector(frame):
         if ((x > TL_inside[0]) and (x < BR_inside[0]) and (y > TL_inside[1]) and (y < BR_inside[1])):
             inside_counter = inside_counter + 1
 
-        # If object is in outside box, increment outside counter variable
-        if ((x > TL_outside[0]) and (x < BR_outside[0]) and (y > TL_outside[1]) and (y < BR_outside[1])):
-            outside_counter = outside_counter + 1
-
     # If pet has been detected inside for more than 10 frames, set detected_inside flag
     # and send a text to the phone.
     if inside_counter > 10:
@@ -197,27 +183,12 @@ def pet_detector(frame):
         # Pause pet detection by setting "pause" flag
         pause = 1
 
-    # If pet has been detected outside for more than 10 frames, set detected_outside flag
-    # and send a text to the phone.
-    if outside_counter > 10:
-        detected_outside = True
-        inside_counter = 0
-        outside_counter = 0
-        # Pause pet detection by setting "pause" flag
-        pause = 1
-
     # If pause flag is set, draw message on screen.
     if pause == 1:
         if detected_inside == True:
-            cv2.putText(frame, 'Pet wants outside!', (int(IM_WIDTH*.1),
+            cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
                         int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
-            cv2.putText(frame, 'Pet wants outside!', (int(IM_WIDTH*.1),
-                        int(IM_HEIGHT*.5)), font, 3, (95, 176, 23), 5, cv2.LINE_AA)
-
-        if detected_outside == True:
-            cv2.putText(frame, 'Pet wants inside!', (int(IM_WIDTH*.1),
-                        int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
-            cv2.putText(frame, 'Pet wants inside!', (int(IM_WIDTH*.1),
+            cv2.putText(frame, 'Pet detected!', (int(IM_WIDTH*.1),
                         int(IM_HEIGHT*.5)), font, 3, (95, 176, 23), 5, cv2.LINE_AA)
 
         # Increment pause counter until it reaches 30 (for a framerate of 1.5 FPS, this is about 20 seconds),
