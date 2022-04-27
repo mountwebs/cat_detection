@@ -16,8 +16,9 @@
 #
 
 
-
 # Import packages
+from utils import visualization_utils as vis_util
+from utils import label_map_util
 import os
 import cv2
 import numpy as np
@@ -48,8 +49,6 @@ if args.usbcam:
 sys.path.append('..')
 
 # Import utilites
-from utils import label_map_util
-from utils import visualization_utils as vis_util
 
 # Name of the directory containing the object detection module we're using
 MODEL_NAME = 'ssdlite_mobilenet_v2_coco_2018_05_09'
@@ -59,21 +58,22 @@ CWD_PATH = os.getcwd()
 
 # Path to frozen detection graph .pb file, which contains the model that is used
 # for object detection.
-PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,'frozen_inference_graph.pb')
+PATH_TO_CKPT = os.path.join(CWD_PATH, MODEL_NAME, 'frozen_inference_graph.pb')
 
 # Path to label map file
-PATH_TO_LABELS = os.path.join(CWD_PATH,'data','mscoco_label_map.pbtxt')
+PATH_TO_LABELS = os.path.join(CWD_PATH, 'data', 'mscoco_label_map.pbtxt')
 
 # Number of classes the object detector can identify
 NUM_CLASSES = 90
 
-## Load the label map.
+# Load the label map.
 # Label maps map indices to category names, so that when the convolution
 # network predicts `5`, we know that this corresponds to `airplane`.
 # Here we use internal utility functions, but anything that returns a
 # dictionary mapping integers to appropriate string labels would be fine
 label_map = label_map_util.load_labelmap(PATH_TO_LABELS)
-categories = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
+categories = label_map_util.convert_label_map_to_categories(
+    label_map, max_num_classes=NUM_CLASSES, use_display_name=True)
 category_index = label_map_util.create_category_index(categories)
 
 # Load the Tensorflow model into memory.
@@ -113,12 +113,12 @@ freq = cv2.getTickFrequency()
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 # Define inside box coordinates (top left and bottom right)
-TL_inside = (int(IM_WIDTH*0.1),int(IM_HEIGHT*0.35))
-BR_inside = (int(IM_WIDTH*0.45),int(IM_HEIGHT-5))
+TL_inside = (int(IM_WIDTH*0.1), int(IM_HEIGHT*0.35))
+BR_inside = (int(IM_WIDTH*0.45), int(IM_HEIGHT-5))
 
 # Define outside box coordinates (top left and bottom right)
-TL_outside = (int(IM_WIDTH*0.46),int(IM_HEIGHT*0.25))
-BR_outside = (int(IM_WIDTH*0.8),int(IM_HEIGHT*.85))
+TL_outside = (int(IM_WIDTH*0.46), int(IM_HEIGHT*0.25))
+BR_outside = (int(IM_WIDTH*0.8), int(IM_HEIGHT*.85))
 
 # Initialize control variables used for pet detector
 detected_inside = False
@@ -134,6 +134,8 @@ pause_counter = 0
 
 # This function contains the code to detect a pet, determine if it's
 # inside or outside, and send a text to the user's phone.
+
+
 def pet_detector(frame):
 
     # Use globals for the control variables so they retain their value after function exits
@@ -160,11 +162,13 @@ def pet_detector(frame):
         min_score_thresh=0.40)
 
     # Draw boxes defining "outside" and "inside" locations.
-    cv2.rectangle(frame,TL_outside,BR_outside,(255,20,20),3)
-    cv2.putText(frame,"Outside box",(TL_outside[0]+10,TL_outside[1]-10),font,1,(255,20,255),3,cv2.LINE_AA)
-    cv2.rectangle(frame,TL_inside,BR_inside,(20,20,255),3)
-    cv2.putText(frame,"Inside box",(TL_inside[0]+10,TL_inside[1]-10),font,1,(20,255,255),3,cv2.LINE_AA)
-    
+    cv2.rectangle(frame, TL_outside, BR_outside, (255, 20, 20), 3)
+    cv2.putText(frame, "Outside box",
+                (TL_outside[0]+10, TL_outside[1]-10), font, 1, (255, 20, 255), 3, cv2.LINE_AA)
+    cv2.rectangle(frame, TL_inside, BR_inside, (20, 20, 255), 3)
+    cv2.putText(frame, "Inside box",
+                (TL_inside[0]+10, TL_inside[1]-10), font, 1, (20, 255, 255), 3, cv2.LINE_AA)
+
     # Check the class of the top detected object by looking at classes[0][0].
     # If the top detected object is a cat (17) or a dog (18) (or a teddy bear (88) for test purposes),
     # find its center coordinates by looking at the boxes[0][0] variable.
@@ -174,7 +178,7 @@ def pet_detector(frame):
         y = int(((boxes[0][0][0]+boxes[0][0][2])/2)*IM_HEIGHT)
 
         # Draw a circle at center of object
-        cv2.circle(frame,(x,y), 5, (75,13,180), -1)
+        cv2.circle(frame, (x, y), 5, (75, 13, 180), -1)
 
         # If object is in inside box, increment inside counter variable
         if ((x > TL_inside[0]) and (x < BR_inside[0]) and (y > TL_inside[1]) and (y < BR_inside[1])):
@@ -205,12 +209,16 @@ def pet_detector(frame):
     # If pause flag is set, draw message on screen.
     if pause == 1:
         if detected_inside == True:
-            cv2.putText(frame,'Pet wants outside!',(int(IM_WIDTH*.1),int(IM_HEIGHT*.5)),font,3,(0,0,0),7,cv2.LINE_AA)
-            cv2.putText(frame,'Pet wants outside!',(int(IM_WIDTH*.1),int(IM_HEIGHT*.5)),font,3,(95,176,23),5,cv2.LINE_AA)
+            cv2.putText(frame, 'Pet wants outside!', (int(IM_WIDTH*.1),
+                        int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
+            cv2.putText(frame, 'Pet wants outside!', (int(IM_WIDTH*.1),
+                        int(IM_HEIGHT*.5)), font, 3, (95, 176, 23), 5, cv2.LINE_AA)
 
         if detected_outside == True:
-            cv2.putText(frame,'Pet wants inside!',(int(IM_WIDTH*.1),int(IM_HEIGHT*.5)),font,3,(0,0,0),7,cv2.LINE_AA)
-            cv2.putText(frame,'Pet wants inside!',(int(IM_WIDTH*.1),int(IM_HEIGHT*.5)),font,3,(95,176,23),5,cv2.LINE_AA)
+            cv2.putText(frame, 'Pet wants inside!', (int(IM_WIDTH*.1),
+                        int(IM_HEIGHT*.5)), font, 3, (0, 0, 0), 7, cv2.LINE_AA)
+            cv2.putText(frame, 'Pet wants inside!', (int(IM_WIDTH*.1),
+                        int(IM_HEIGHT*.5)), font, 3, (95, 176, 23), 5, cv2.LINE_AA)
 
         # Increment pause counter until it reaches 30 (for a framerate of 1.5 FPS, this is about 20 seconds),
         # then unpause the application (set pause flag to 0).
@@ -222,8 +230,10 @@ def pet_detector(frame):
             detected_outside = False
 
     # Draw counter info
-    cv2.putText(frame,'Detection counter: ' + str(max(inside_counter,outside_counter)),(10,100),font,0.5,(255,255,0),1,cv2.LINE_AA)
-    cv2.putText(frame,'Pause counter: ' + str(pause_counter),(10,150),font,0.5,(255,255,0),1,cv2.LINE_AA)
+    cv2.putText(frame, 'Detection counter: ' + str(max(inside_counter,
+                outside_counter)), (10, 100), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
+    cv2.putText(frame, 'Pause counter: ' + str(pause_counter),
+                (10, 150), font, 0.5, (255, 255, 0), 1, cv2.LINE_AA)
 
     return frame
 
@@ -232,30 +242,32 @@ def pet_detector(frame):
 # The camera has to be set up and used differently depending on if it's a
 # Picamera or USB webcam.
 
+
 ### Picamera ###
 if camera_type == 'picamera':
     # Initialize Picamera and grab reference to the raw capture
     camera = PiCamera()
-    camera.resolution = (IM_WIDTH,IM_HEIGHT)
+    camera.resolution = (IM_WIDTH, IM_HEIGHT)
     camera.framerate = 10
-    rawCapture = PiRGBArray(camera, size=(IM_WIDTH,IM_HEIGHT))
+    rawCapture = PiRGBArray(camera, size=(IM_WIDTH, IM_HEIGHT))
     rawCapture.truncate(0)
 
     # Continuously capture frames and perform object detection on them
-    for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
+    for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
 
         t1 = cv2.getTickCount()
-        
+
         # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
         # i.e. a single-column array, where each item in the column has the pixel RGB value
-        frame = frame1.array
+        frame = np.copy(frame1.array)
         frame.setflags(write=1)
 
         # Pass frame into pet detection function
         frame = pet_detector(frame)
 
         # Draw FPS
-        cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+        cv2.putText(frame, "FPS: {0:.2f}".format(
+            frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow('Object detector', frame)
@@ -274,12 +286,12 @@ if camera_type == 'picamera':
     camera.close()
 
 ### USB webcam ###
-    
+
 elif camera_type == 'usb':
     # Initialize USB webcam feed
     camera = cv2.VideoCapture(0)
-    ret = camera.set(3,IM_WIDTH)
-    ret = camera.set(4,IM_HEIGHT)
+    ret = camera.set(3, IM_WIDTH)
+    ret = camera.set(4, IM_HEIGHT)
 
     # Continuously capture frames and perform object detection on them
     while(True):
@@ -294,7 +306,8 @@ elif camera_type == 'usb':
         frame = pet_detector(frame)
 
         # Draw FPS
-        cv2.putText(frame,"FPS: {0:.2f}".format(frame_rate_calc),(30,50),font,1,(255,255,0),2,cv2.LINE_AA)
+        cv2.putText(frame, "FPS: {0:.2f}".format(
+            frame_rate_calc), (30, 50), font, 1, (255, 255, 0), 2, cv2.LINE_AA)
 
         # All the results have been drawn on the frame, so it's time to display it.
         cv2.imshow('Object detector', frame)
@@ -309,5 +322,5 @@ elif camera_type == 'usb':
             break
 
     camera.release()
-        
+
 cv2.destroyAllWindows()
