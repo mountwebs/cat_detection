@@ -219,6 +219,7 @@ def pet_detector(frame):
 camera = PiCamera()
 camera.resolution = (IM_WIDTH, IM_HEIGHT)
 camera.framerate = 10
+camera.rotation = 180;
 rawCapture = PiRGBArray(camera, size=(IM_WIDTH, IM_HEIGHT))
 rawCapture.truncate(0)
 
